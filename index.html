@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Graph Labels</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049dd;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="max-height: 100%;">
+        <div style="text-align: center;">
+            <button id="dynamicButton" onclick="showDynamicGraph()">Dynamic Graph</button>
+            <!-- <button id="normalButton" onclick="showNormalGraph()">Normal Graph</button> -->
+            <button id="resetButton" onclick="resetGraphs()">Reset</button>
+        </div>
+
+        <div id="dynamic" style="display: block;">
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <h1>Dynamic Graph </h1>
+
+            <div>
+                <label for="initialValue" style="font-size: 24px;">Enter initial y-axis value: </label>
+                <input type="number" id="initialValue" style="padding: 10px;" placeholder="Enter initial value">
+                <button onclick="initializeGraph()">Initialize Graph</button>
+                <button id="downloadButton">Download</button>
+            </div>
+
+            <div style="height: 65%; width: 70%;" >
+                <canvas style="padding: 30px;" id="mydynamicChart"></canvas>
+            </div>
+        </div>
+        <span style="text-align: left; font-size: 12px;">@Nikhil</span>
+    </div>
+
+    <!-- <div id="normal" style="display: none;">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <h1>Normal Graph</h1>
+    
+        <div>
+            <label for="dataInput">Enter data points (comma-separated): </label>
+            <input type="text" id="dataInput">
+            <button onclick="createGraph()">Create Graph</button>
+        </div>
+        
+        <div>
+            <canvas id="myChart2"></canvas>
+        </div>
+    </div>
+     -->
+    <script>
+        function showNormalGraph() {
+            document.getElementById('normal').style.display = 'block';
+            document.getElementById('dynamic').style.display = 'none';
+        }
+
+        function showDynamicGraph() {
+            document.getElementById('dynamic').style.display = 'block';
+            document.getElementById('normal').style.display = 'none';
+        }
+
+        function createGraph() {
+            const dataInput = document.getElementById("dataInput").value;
+            const dataPoints = dataInput.split(",").map(Number);
+
+            const ctx = document.getElementById('myChart2').getContext('2d');
+            const myChart2 = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dataPoints.map((_, index) => `Data Point ${index + 1}`),
+                    datasets: [{
+                        label: 'Data Points',
+                        data: dataPoints,
+                        fill: false,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        let dataPointsDynamic = [];
+        let initialYValueDynamic = 0;
+
+        const ctxDynamic = document.getElementById('mydynamicChart').getContext('2d');
+        const mydynamicChart = new Chart(ctxDynamic, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Data Points',
+                    data: dataPointsDynamic,
+                    fill: false,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                onClick: handleChartClickDynamic
+            }
+        });
+
+        function initializeGraph() {
+            const initialValueInput = document.getElementById("initialValue");
+            initialYValueDynamic = parseFloat(initialValueInput.value) || 0;
+            dataPointsDynamic = [initialYValueDynamic];
+            mydynamicChart.data.labels = ["0"];
+            mydynamicChart.data.datasets[0].data = dataPointsDynamic;
+            mydynamicChart.update();
+        }
+
+        function handleChartClickDynamic(event, activeElements) {
+            if (activeElements.length === 0) {
+                const xValue = mydynamicChart.scales['x'].getValueForPixel(event.x);
+                const yValue = mydynamicChart.scales['y'].getValueForPixel(event.y);
+                const newLabel = prompt('Enter a label for the data point:', `Data Point ${dataPointsDynamic.length + 1}`);
+                if (newLabel) {
+                    dataPointsDynamic.push(yValue);
+                    mydynamicChart.data.labels.push(newLabel);
+                    mydynamicChart.data.datasets[0].data = dataPointsDynamic;
+                    mydynamicChart.update();
+                }
+            }
+        }
+
+        function resetGraphs() {
+            // const normalSection = document.getElementById('normal');
+            // const dynamicSection = document.getElementById('dynamic');
+
+            // normalSection.style.display = 'none';
+            // dynamicSection.style.display = 'block';
+
+            document.getElementById("initialValue").value = "";
+            initializeGraph();
+
+            // document.getElementById("dataInput").value = "";
+            // createGraph();
+        }
+
+        document.getElementById("downloadButton").addEventListener("click", function () {
+            const canvas = document.getElementById("mydynamicChart");
+            const image = canvas.toDataURL("image/jpeg");
+
+            const link = document.createElement("a");
+            link.href = image;
+            link.download = "graph.jpeg";
+            link.click();
+        });
+
+    </script>
+</body>
+
+</html>
